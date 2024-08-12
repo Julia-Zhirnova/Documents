@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+
+{% load static %}
+
+{% block title %}Upload .docx{% endblock %}
+
+{% block content %}
+    <div class="jumbotron">
+        <h2>Upload a .docx file</h2>
+        <p class="lead">It's important to notice that the .docx file has to be separated between Header and Normal style paragraphs.</p>
+        <hr class="sidebar-divider">
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <div class="form-group">
+                <button type="submit" value="Save" class="btn btn-primary">Upload</button>
+            </div>
+        </form>
+    </div>
+
+    <iframe src='https://docs.google.com/document/d/19fcndA8QJbJ-BGQiHofjxKjMJ_bjZQo_/edit'
+    width='100%' height='650px' frameborder='0'></iframe>
+
+    <iframe src='https://docs.google.com/spreadsheets/d/1LglTxt4HyyCsoohl6wxuLaK2pABdh14C/edit?gid=303974596#gid=303974596'
+    width='100%' height='650px' frameborder='0'></iframe>
+ 
+    <script type="text/javascript">
+        function Upload() {
+            var fileUpload = document.getElementById("fileUpload");
+            var regex = /^([a-zA-Z0-9\s_\\.\-:])+(.csv|.txt)$/;
+            if (regex.test(fileUpload.value.toLowerCase())) {
+                if (typeof (FileReader) != "undefined") {
+                    var reader = new FileReader();
+                    reader.onload = function (e) {
+                        var table = document.createElement("table");
+                        var rows = e.target.result.split("\n");
+                        for (var i = 0; i < rows.length; i++) {
+                            var cells = rows[i].split(",");
+                            if (cells.length > 1) {
+                                var row = table.insertRow(-1);
+                                for (var j = 0; j < cells.length; j++) {
+                                    var cell = row.insertCell(-1);
+                                    cell.innerHTML = cells[j];
+                                }
+                            }
+                        }
+                        var dvCSV = document.getElementById("dvCSV");
+                        dvCSV.innerHTML = "";
+                        dvCSV.appendChild(table);
+                    }
+                    reader.readAsText(fileUpload.files[0]);
+                } else {
+                    alert("This browser does not support HTML5.");
+                }
+            } else {
+                alert("Please upload a valid CSV file.");
+            }
+        }
+      </script>
+      <input type="file" id="fileUpload" />
+      <input type="button" id="upload" value="Upload" onclick="Upload()" />
+      <hr />
+      <div id="dvCSV">
+      </div>
+
+      <!-- Javascript CDN (jQuery and mammoth library) -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.4.18/mammoth.browser.min.js" integrity="sha512-Z8jpnlnXO9rena5GNKiX0EHQRNLLh0LobtlTESOc55UMcQPOdxBpSMrU9MMZI1b5Xoph9bPMFbNyi9s33Du0EA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+<!-- HTML -->
+<!-- Input file to choose file and target div to preview docx content -->
+<input type="file" id="file" name="document" accept=".doc, .docx"/>
+<div id="docPreview"></div>
+
+<!-- Javascript code -->
+<script>
+    $("body").on("change", "#file", function(e){
+        parseWordDocxFile(e.target.files, '#docPreview');
+    });
+
+    function parseWordDocxFile(inputElement, showDiv) {
+        var files = inputElement || [];
+        if (!files.length) return;
+        var file = files[0];
+        console.time();
+        var reader = new FileReader();
+        reader.onloadend = function(event) {
+
+            var arrayBuffer = reader.result;
+            mammoth.convertToHtml({arrayBuffer: arrayBuffer}).then(function (resultObject) {
+                console.log(resultObject.value);
+                $(showDiv).html(resultObject.value);
+                console.log(resultObject.value);
+            })
+            console.timeEnd();
+            mammoth.extractRawText({arrayBuffer: arrayBuffer}).then(function (resultObject) {
+                result2.innerHTML = resultObject.value;
+                console.log(resultObject.value);
+            })
+
+            mammoth.convertToMarkdown({arrayBuffer: arrayBuffer}).then(function (resultObject) {
+                result3.innerHTML = resultObject.value;
+                console.log(resultObject.value);
+            })
+        };
+        reader.readAsArrayBuffer(file);
+    }
+</script>
+
+{% endblock %}

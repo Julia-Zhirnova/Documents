@@ -1,0 +1,8 @@
+asgiref==3.6.0
+Django==4.1.7
+lxml==4.9.2
+Pillow==9.4.0
+python-docx==0.8.11
+sqlparse==0.4.3
+docxtpl==0.18.0
+openpyxl==3.1.5
